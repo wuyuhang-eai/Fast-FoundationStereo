@@ -201,9 +201,9 @@ class FastFoundationStereo(nn.Module):
       stem_2x = self.stem_2(image1)
 
       if optimize_build_volume=='pytorch1':
-        gwc_volume = build_gwc_volume_optimized_pytorch1(features_left[0], features_right[0], self.args.max_disp//4, self.cv_group, normalize=self.args.normalize)
+        gwc_volume = build_gwc_volume_optimized_pytorch1(features_left[0], features_right[0], self.args.max_disp//4, self.cv_group, normalize=self.args.get('normalize', True))
       elif optimize_build_volume=='triton':
-        gwc_volume = build_gwc_volume_triton(features_left[0], features_right[0], self.args.max_disp//4, self.cv_group, normalize=self.args.normalize)
+        gwc_volume = build_gwc_volume_triton(features_left[0], features_right[0], self.args.max_disp//4, self.cv_group, normalize=self.args.get('normalize', True))
       else:
         raise RuntimeError(f"Invalid optimize_build_volume: {optimize_build_volume}")
 

@@ -38,6 +38,7 @@ if __name__=="__main__":
   parser.add_argument('--valid_iters', type=int, default=8, help='number of flow-field updates during forward pass')
   parser.add_argument('--max_disp', type=int, default=192, help='maximum disparity')
   parser.add_argument('--zfar', type=float, default=100, help="max depth to include in point cloud")
+  parser.add_argument('--headless', action='store_true', help='Save outputs without opening GUI windows')
   args = parser.parse_args()
 
   set_logging_format()
@@ -102,8 +103,9 @@ if __name__=="__main__":
   imageio.imwrite(f'{args.out_dir}/disp_vis.png', vis)
   s = 1280/vis.shape[1]
   resized_vis = cv2.resize(vis, (int(vis.shape[1]*s), int(vis.shape[0]*s)))
-  cv2.imshow('disp', resized_vis[:,:,::-1])
-  cv2.waitKey(0)
+  if not args.headless:
+    cv2.imshow('disp', resized_vis[:,:,::-1])
+    cv2.waitKey(0)
 
   if args.remove_invisible:
     yy,xx = np.meshgrid(np.arange(disp.shape[0]), np.arange(disp.shape[1]), indexing='ij')
@@ -135,16 +137,17 @@ if __name__=="__main__":
       o3d.io.write_point_cloud(f'{args.out_dir}/cloud_denoise.ply', inlier_cloud)
       pcd = inlier_cloud
 
-    logging.info("Visualizing point cloud. Press ESC to exit.")
-    vis = o3d.visualization.Visualizer()
-    vis.create_window()
-    vis.add_geometry(pcd)
-    vis.get_render_option().point_size = 1.0
-    vis.get_render_option().background_color = np.array([0.5, 0.5, 0.5])
-    ctr = vis.get_view_control()
-    ctr.set_front([0, 0, -1])
-    id = np.asarray(pcd.points)[:,2].argmin()
-    ctr.set_lookat(np.asarray(pcd.points)[id])
-    ctr.set_up([0, -1, 0])
-    vis.run()
-    vis.destroy_window()
+    if not args.headless:
+      logging.info("Visualizing point cloud. Press ESC to exit.")
+      vis = o3d.visualization.Visualizer()
+      vis.create_window()
+      vis.add_geometry(pcd)
+      vis.get_render_option().point_size = 1.0
+      vis.get_render_option().background_color = np.array([0.5, 0.5, 0.5])
+      ctr = vis.get_view_control()
+      ctr.set_front([0, 0, -1])
+      id = np.asarray(pcd.points)[:,2].argmin()
+      ctr.set_lookat(np.asarray(pcd.points)[id])
+      ctr.set_up([0, -1, 0])
+      vis.run()
+      vis.destroy_window()
